@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>学习精细化的双臂毛巾操作 · Piper × ACT</title>
+<meta name="description" content="基于四台 Piper 机械臂的双臂机器人学习系统，用于精细化的毛巾折叠。基于 ROS 2 Control，三相机 ACT，课程式 HIL 微调。真数据，真机器人，真进展。" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  html, body { font-family: "Inter", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+  .t-mono, .hero__eyebrow, .nav__lang, .policy-tag, .nav__brand-text, .node__tag, .data-card__stats span, .footer__todo, .kicker, .caption__tag, .gripper-card__divider, .status-pill, .lab-note__kicker, .note-card__kicker, .tnode__id, .tnode__date, .policy-box__tag, .kicker--inline, .row-video__title, .row-split__title, .multiview__title, .hil-flow__title, .notes-wrap__title, .result-video h4 { font-family: var(--font-mono) !important; }
+  .hero__title { letter-spacing: -0.025em; line-height: 1.12; }
+  .section__title { line-height: 1.2; }
+  .section--curriculum .timeline { letter-spacing: 0; }
+</style>
+</head>
+<body>
+
+<!-- ============= 滚动进度 ============= -->
+<div class="scroll-progress" aria-hidden="true"><div class="bar" id="scrollBar"></div></div>
+
+<!-- ============= 顶部导航（5 项） ============= -->
+<header class="nav" id="nav">
+  <div class="container nav__inner">
+    <a href="#top" class="nav__brand">
+      <span class="nav__brand-mark"></span>
+      <span class="nav__brand-text">Piper · 双臂毛巾</span>
+    </a>
+    <nav class="nav__menu" aria-label="Primary">
+      <a href="#overview">总览</a>
+      <a href="#system">系统</a>
+      <a href="#learning">学习</a>
+      <a href="#results">结果</a>
+      <a href="#status">状态</a>
+    </nav>
+
+    <div class="nav__actions">
+      <a class="nav__lang" href="../" lang="en" title="Switch to English">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+          <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.93 6h-2.95a15.7 15.7 0 00-1.4-3.6A8.03 8.03 0 0118.93 8zM12 4.05c.86 1.21 1.55 2.55 2 3.95h-4c.45-1.4 1.14-2.74 2-3.95zM4.26 14a8 8 0 01-.27-2 8 8 0 01.27-2h3.38c-.06.66-.13 1.32-.13 2 0 .68.07 1.34.13 2H4.26zm.81 2h2.95c.32 1.27.78 2.45 1.4 3.6A8.03 8.03 0 015.07 16zm2.95-8H5.07a8.03 8.03 0 014.35-3.6A15.7 15.7 0 008.02 8zM12 19.95c-.86-1.21-1.55-2.54-2-3.95h4c-.45 1.41-1.14 2.74-2 3.95zm2.34-5.95h-4.68c-.09-.66-.16-1.32-.16-2 0-.68.07-1.34.16-2h4.68c.09.66.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.27 2.6a15.7 15.7 0 001.4-3.6h2.95a8.03 8.03 0 01-4.35 3.6zM16.36 14c.06-.66.13-1.32.13-2 0-.68-.07-1.34-.13-2h3.38a8 8 0 01.27 2 8 8 0 01-.27 2h-3.38z" fill="currentColor"/>
+        </svg>
+        <span>EN</span>
+      </a>
+      <a class="nav__github" href="https://github.com/dream25851/physical_ai_runtime" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 查看源码" title="在 GitHub 查看源码">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="currentColor" d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1-.02-1.96-3.2.69-3.87-1.54-3.87-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.16 1.18a10.95 10.95 0 0 1 5.74 0c2.2-1.49 3.16-1.18 3.16-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.07.78 2.16 0 1.56-.01 2.81-.01 3.2 0 .31.21.68.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
+        </svg>
+      </a>
+    </div>
+
+    <button class="nav__toggle" id="navToggle" aria-label="切换导航" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ============= Hero（真视频） ============= -->
+<section class="hero" id="top">
+  <div class="hero__bg" aria-hidden="true">
+    <div class="hero__gradient"></div>
+    <div class="hero__grid"></div>
+  </div>
+
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <div class="hero__eyebrow hero-fade" style="--delay:.05s">
+        <span class="dot"></span> 机器人 · 具身智能 · 课程式模仿学习
+      </div>
+
+      <h1 class="hero__title">
+        <span class="hero-mask">学习精细化的</span>
+        <span class="hero-mask">双臂机器人</span>
+        <span class="hero-mask hero-mask--accent">毛巾操作。</span>
+      </h1>
+
+      <p class="hero__sub hero-fade" style="--delay:.7s">
+        基于 ROS 2 Control 的双臂系统：把人的主从遥操作、三相机示教、课程式 ACT 策略训练
+        串成一条完整的链路——先用蓝毛巾学抓角抬升，再用红绿毛巾吸收纠偏，最后折好整条毛巾。
+      </p>
+
+      <div class="hero__badges hero-fade" style="--delay:1.0s">
+        <span class="status-pill status-pill--done" data-note="真机定性完成红、绿毛巾从抓起到折好的完整任务。">定性整任务 · 通过</span>
+        <span class="status-pill status-pill--doing" data-note="继承式微调模型已经在真机上跑过；笔记与失败都有存档。">HIL 微调 · 完成</span>
+        <span class="status-pill status-pill--todo" data-note="四种毛巾均已收集，但还没有进入训练集。">四色毛巾 · 就绪</span>
+      </div>
+
+      <div class="hero__cta hero-fade" style="--delay:1.1s">
+        <a href="#learning" class="btn btn--primary">
+          <span>读课程方案</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 4v14m0 0l-5-5m5 5l5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#results" class="btn btn--ghost">看真视频与真毛巾</a>
+      </div>
+    </div>
+
+    <div class="hero__visual hero-fade" style="--delay:.3s">
+      <div class="hero__media">
+        <video data-media="hero_video" class="hero__video" autoplay muted loop playsinline poster="assets/images/towel_blue.jpg" aria-label="真机画面：抓角并折叠毛巾">
+          <source src="assets/videos/hero_demo.mp4" type="video/mp4" />
+        </video>
+        <div class="hero__media-tape" aria-hidden="true">
+          <span>4 × PIPER · 2 MASTER · 2 SLAVE</span>
+          <span>·</span>
+          <span>3 CAMERAS · 14-D STATE</span>
+          <span>·</span>
+          <span>ACT · chunk_size = 150</span>
+          <span>·</span>
+          <span>100 → 101 EPISODES</span>
+          <span>·</span>
+        </div>
+      </div>
+
+      <div class="hero__chips">
+        <span class="chip">双臂遥操作</span>
+        <span class="chip">3 路相机</span>
+        <span class="chip">课程式 HIL</span>
+        <span class="chip">自研细长夹爪</span>
+        <span class="chip">四种毛巾</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 01 总览 ============= -->
+<section class="section section--overview" id="overview">
+  <div class="container narrow reveal">
+    <p class="kicker">01 — 总览</p>
+    <h2 class="section__title">两条臂、一条毛巾，先把最小的子技能做对。</h2>
+
+    <p class="section__lead">
+      本项目搭建了一个四台 Piper 机械臂的双臂机器人学习系统，全部实验围绕同一个例子展开——<strong>折毛巾</strong>。两台 Master 臂由操作员在重力补偿 / 示教模式下直接拖动；两台 Slave 臂在真实工位上实时镜像执行，同时三台同步相机（左腕、右腕、固定的顶部 Orbbec）与 14 维机器人状态一起被 <em>Episode Recorder</em> 打上时间戳并保存。这些示教用于训练 ACT 策略，但不是一锅端：先在蓝毛巾上学一个可复用的子技能（抓角抬升），再在红、绿毛巾上吸收操作员对困难状态的纠偏，最后扩展到完整折叠。
+    </p>
+
+    <p class="section__lead">
+      截至今天，继承式微调模型在红、绿毛巾上定性完成了"抓角 → 抬升 → 折叠"。这里不报任何数字——这一页是讲工程故事、放真材料的地方。
+    </p>
+  </div>
+</section>
+
+<!-- ============= 02 系统 ============= -->
+<section class="section section--system" id="system">
+  <div class="container">
+    <p class="kicker reveal">02 — 系统</p>
+    <h2 class="section__title reveal">四台臂，两台主机，一层镜像。</h2>
+    <p class="section__lead reveal narrow">
+      实时闭环留在机器人侧的 NUC；学习留在 RTX 4090 主机。它们之间只走 ROS 2。
+    </p>
+
+    <div class="arch reveal" id="arch">
+      <div class="arch__row arch__row--top" aria-label="操作员层">
+        <div class="node node--human">
+          <div class="node__icon"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 21c0-4 3.5-6.5 7-6.5s7 2.5 7 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div class="node__label">操作员</div>
+          <div class="node__hint">双手拖动两台 Master 臂</div>
+        </div>
+      </div>
+
+      <div class="arch__connector arch__connector--live"><span></span></div>
+
+      <div class="arch__row arch__row--mid">
+        <div class="node"><div class="node__tag">MASTER L</div><div class="node__label">Master Piper · 左</div><div class="node__hint">重力补偿 / 示教</div></div>
+        <div class="node node--center"><div class="node__tag">TELEOP</div><div class="node__label">双臂镜像</div><div class="node__hint">实时 · ROS 2 · 30 Hz</div></div>
+        <div class="node"><div class="node__tag">MASTER R</div><div class="node__label">Master Piper · 右</div><div class="node__hint">重力补偿 / 示教</div></div>
+      </div>
+
+      <div class="arch__connector arch__connector--live"><span></span></div>
+
+      <div class="arch__row arch__row--mid">
+        <div class="node"><div class="node__tag">SLAVE</div><div class="node__label">2 × Slave Piper</div><div class="node__hint">细长夹爪 · 执行任务</div></div>
+        <div class="node"><div class="node__tag">EDGE</div><div class="node__label">Intel NUC · ROS 2 Control</div><div class="node__hint">机器人侧实时闭环</div></div>
+        <div class="node"><div class="node__tag">VISION</div><div class="node__label">2 × 腕部 + 1 × 顶部 Orbbec</div><div class="node__hint">3 路 RGB · 480 × 640</div></div>
+      </div>
+
+      <div class="arch__connector arch__connector--async"><span></span></div>
+
+      <div class="arch__row arch__row--mid">
+        <div class="node"><div class="node__tag">RECORD</div><div class="node__label">Episode Recorder</div><div class="node__hint">3 路视频 · state · action</div></div>
+        <div class="node node--center"><div class="node__tag">LEARN</div><div class="node__label">RTX 4090 · ACT · 课程训练</div><div class="node__hint">LeRobot env · Pixi</div></div>
+        <div class="node"><div class="node__tag">DEPLOY</div><div class="node__label">回到 NUC</div><div class="node__hint">同一 runtime，真机部署</div></div>
+      </div>
+    </div>
+
+    <!-- 双臂遥操作：真视频 -->
+    <div class="row-video reveal">
+      <div class="row-video__text">
+        <p class="kicker kicker--inline">双臂遥操作</p>
+        <h3 class="row-video__title">人示教，臂同步，相机记录。</h3>
+        <p class="row-video__desc">
+          没有手柄、没有键盘、没有脚本。操作员直接抓握两台 Master 臂，按自己的节奏完成整个任务；两台 Slave 臂实时复现相同的关节轨迹，同时三台相机与 14 维机器人状态一起被 <em>Episode Recorder</em> 打上时间戳并保存。
+        </p>
+      </div>
+      <div class="row-video__media">
+        <video data-media="teleop_video" class="row-video__video" autoplay muted loop playsinline aria-label="真机遥操作">
+          <source src="assets/videos/teleoperation.mp4" type="video/mp4" />
+        </video>
+        <div class="row-video__caption">图 · 四 Piper 工位上的真实遥操作。</div>
+      </div>
+    </div>
+
+    <!-- 自研夹爪 -->
+    <div class="row-split reveal">
+      <div class="row-split__text">
+        <p class="kicker kicker--inline">自研末端执行器</p>
+        <h3 class="row-split__title">为抓角而做窄的手指。</h3>
+        <p class="row-split__desc">
+          原厂 Piper 夹爪是通用型，毛巾角不是。我们设计了一款细长、加长的夹爪，装在<strong>两台 Slave 臂</strong>上。更窄的指节让夹爪能伸到角和桌面之间而不撞到旁边的布料；更长的行程让在可形变边缘上闭合更可控。
+        </p>
+        <div class="status status--done">
+          <span class="status__dot"></span>
+          <span><strong>状态：</strong>细长夹爪已完成设计、加工，并装在两台 Slave 臂上 · 真机抓取定性提升。</span>
+        </div>
+      </div>
+      <div class="row-split__media">
+        <div class="media-placeholder media-placeholder--gripper" data-media="gripper_photo">
+          <img data-media-img alt="" hidden>
+          <div class="media-placeholder__inner" data-media-fallback>
+            <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><path d="M22 46V18a5 5 0 0110 0v28M32 46V18a5 5 0 0110 0v28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <p class="t-mono">TODO · grasp.jpg</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 三相机 -->
+    <div class="multiview reveal">
+      <p class="kicker kicker--inline">策略真正看到的是什么</p>
+      <h3 class="multiview__title">3 路 RGB + 关节状态。 <span class="t-faint">（五相机方案是过去走过的弯路，见工程笔记。）</span></h3>
+      <div class="vision-flow">
+        <div class="vision-flow__cam">
+          <div class="media-placeholder media-placeholder--cam" data-media="cam_left_wrist">
+            <img data-media-img alt="" hidden>
+            <div class="media-placeholder__inner" data-media-fallback>
+              <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><rect x="10" y="14" width="44" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><circle cx="32" cy="32" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              <p class="t-mono">TODO · left_wrist.jpg</p>
+            </div>
+          </div>
+          <div class="vision-flow__cap"><b>左腕部相机</b><span>左角局部</span></div>
+        </div>
+        <div class="vision-flow__plus" aria-hidden="true">+</div>
+        <div class="vision-flow__cam">
+          <div class="media-placeholder media-placeholder--cam" data-media="cam_right_wrist">
+            <img data-media-img alt="" hidden>
+            <div class="media-placeholder__inner" data-media-fallback>
+              <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><rect x="10" y="14" width="44" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><circle cx="32" cy="32" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              <p class="t-mono">TODO · right_wrist.jpg</p>
+            </div>
+          </div>
+          <div class="vision-flow__cap"><b>右腕部相机</b><span>右角局部</span></div>
+        </div>
+        <div class="vision-flow__plus" aria-hidden="true">+</div>
+        <div class="vision-flow__cam">
+          <div class="media-placeholder media-placeholder--cam" data-media="cam_orbbec_top">
+            <img data-media-img alt="" hidden>
+            <div class="media-placeholder__inner" data-media-fallback>
+              <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><rect x="10" y="14" width="44" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><circle cx="32" cy="32" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              <p class="t-mono">TODO · orbbec_top.jpg</p>
+            </div>
+          </div>
+          <div class="vision-flow__cap"><b>顶部 Orbbec</b><span>工作区全局</span></div>
+        </div>
+        <div class="vision-flow__plus" aria-hidden="true">+</div>
+        <div class="vision-flow__cam vision-flow__cam--state">
+          <div class="state-card">
+            <div class="state-card__row"><span>关节位置</span><b>7 × 2</b></div>
+            <div class="state-card__row"><span>夹爪开度</span><b>2</b></div>
+            <div class="state-card__row"><span>总计</span><b>14 维 state</b></div>
+          </div>
+          <div class="vision-flow__cap"><b>机器人状态</b><span>14 维 · 每步</span></div>
+        </div>
+        <div class="vision-flow__arr" aria-hidden="true">→</div>
+        <div class="vision-flow__out">
+          <div class="policy-box">
+            <div class="policy-box__tag">POLICY</div>
+            <div class="policy-box__name">ACT</div>
+            <div class="policy-box__hint">Action Chunking with Transformers</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 03 学习 ============= -->
+<section class="section section--learning" id="learning">
+  <div class="container">
+    <p class="kicker reveal">03 — 学习</p>
+    <h2 class="section__title reveal">先学一个子技能。在困难状态接管。继承式微调。</h2>
+    <p class="section__lead reveal narrow">
+      课程一共五步，每一步都解决上一步留下的具体缺口。预训练只在蓝毛巾上学抓角抬升；微调吸收操作员在红、绿毛巾上的纠偏；完整任务跟在后面。
+    </p>
+
+    <div class="timeline reveal" id="timeline">
+      <div class="timeline__track" aria-hidden="true"></div>
+
+      <article class="tnode tnode--done" data-note="双臂管线验收、三相机时间同步、失败分类、单顶视 ACT 基线的 executed-step 横扫。">
+        <div class="tnode__head"><span class="tnode__id">C0</span><span class="tnode__date">08-26 ~ 08-29</span></div>
+        <div class="tnode__title">管线与失败诊断</div>
+        <div class="tnode__body">三相机时间同步、ACT 推理、夹爪闭合、动作执行、失败分类，以及对单顶视 ACT 基线的 executed-step 横扫。</div>
+        <span class="status-pill status-pill--done">完成</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="在 pick_corner_orbbec 上训练：100 episodes，全部蓝毛巾，只做抓角抬升。">
+        <div class="tnode__head"><span class="tnode__id">C1</span><span class="tnode__date">09-01</span></div>
+        <div class="tnode__title">直接抓角 · 蓝毛巾</div>
+        <div class="tnode__body">100 条示教，全部在<em>蓝</em>毛巾上，最小可复用子技能：定位角、闭合、抬升。ACT 用 <code>chunk_size=150</code>（横扫后的最优值），20k steps，ResNet-18 视觉塔。这是后续课程要继承的<em>预训练先验</em>。</div>
+        <span class="status-pill status-pill--done">完成</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="pick_corner_hil：101 episodes，红 + 绿毛巾，每条恰含 1 次人工接管 interval。">
+        <div class="tnode__head"><span class="tnode__id">C2</span><span class="tnode__date">09-02</span></div>
+        <div class="tnode__title">困难状态 HIL · 红 + 绿</div>
+        <div class="tnode__body">C1 策略在红、绿毛巾上先自主运行；在它即将抓空或偏移时由人接管，并完成整套任务（包括折叠）。共 101 条，每条恰好 1 次 teleop interval。</div>
+        <span class="status-pill status-pill--done">完成</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="pick_corner_finetune/checkpoints/010000 —— 从 C1 020000 初始化，在红+绿 HIL 上 10k steps。">
+        <div class="tnode__head"><span class="tnode__id">C3</span><span class="tnode__date">09-02</span></div>
+        <div class="tnode__title">继承式微调</div>
+        <div class="tnode__body">从 C1 初始化（不重头训），在红+绿 HIL 数据上跑 10k steps。模型保留有效部分（在蓝毛巾上的角点接近），吸收纠偏（红、绿毛巾上的偏位恢复 + 全任务 rollout）。</div>
+        <span class="status-pill status-pill--done">完成</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="操作员确认红、绿毛巾均可完成全任务；这是定性结果，不是逐 trial 的数字。">
+        <div class="tnode__head"><span class="tnode__id">C4</span><span class="tnode__date">09-02</span></div>
+        <div class="tnode__title">定性整任务测试</div>
+        <div class="tnode__body">在没有任何人介入的情况下，微调模型在工位实测中完成了<em>抓角 → 抬升 → 折叠</em>，红、绿毛巾都能跑通。这是<strong>定性</strong>结果——还没有逐 trial 台账。</div>
+        <span class="status-pill status-pill--done">定性通过</span>
+      </article>
+    </div>
+
+    <!-- chunk_size 说明 -->
+    <div class="callout callout--accent reveal">
+      <strong>为什么是 chunk_size = 150。</strong>
+      C0 阶段对 executed step 做了横扫：太短会让控制循环饿着，太长会让策略反应不过来一个正在滑脱的角。150 是经验上让真机抓角抓得住的那个值——也是塞进继承式微调里的那一个。
+    </div>
+
+    <!-- HIL 流程 -->
+    <div class="hil-flow reveal">
+      <div class="hil-flow__head">
+        <p class="kicker kicker--inline">从抓角走向折叠</p>
+        <h3 class="hil-flow__title">ACT 抓角。人完成折叠。机器人录下来。</h3>
+        <p class="hil-flow__desc">完整任务——抓、抬、折——对单条端到端示教来说太长了。我们把它切开：让策略做它已经做得好的（抓角），让操作员恰好在策略开始紧张的位置接管（折叠）。这一段轨迹本身就是下一轮训练的信号。</p>
+      </div>
+      <div class="hil-flow__steps">
+        <div class="hil-step">
+          <div class="hil-step__num">1</div>
+          <div class="hil-step__title">ACT 自主抓角</div>
+          <div class="hil-step__desc">微调后的策略靠近角点并闭合。</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step hil-step--human">
+          <div class="hil-step__num">2</div>
+          <div class="hil-step__title">人工接管</div>
+          <div class="hil-step__desc">策略即将失败时，操作员接管 Master 臂。</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step hil-step--human">
+          <div class="hil-step__num">3</div>
+          <div class="hil-step__title">双臂折叠示教</div>
+          <div class="hil-step__desc">人完成抬升 + 前推 + 释放的全过程。</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step">
+          <div class="hil-step__num">4</div>
+          <div class="hil-step__title">Episode 入库</div>
+          <div class="hil-step__desc">整条轨迹写入 HIL 数据集——一条新的"纠偏 + 完成"。</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step hil-step--loop">
+          <div class="hil-step__num">5</div>
+          <div class="hil-step__title">继承微调</div>
+          <div class="hil-step__desc">C1 初始化 → C3 一步 → 循环直到定性通过。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 04 结果 ============= -->
+<section class="section section--results" id="results">
+  <div class="container">
+    <p class="kicker reveal">04 — 结果</p>
+    <h2 class="section__title reveal">真视频，真毛巾，诚实的标签。</h2>
+    <p class="section__lead reveal narrow">
+      你看到的每条毛巾都是同一个工位；它们之间的区别是各自在数据里的角色。黄色目前还在工位的色卡里，尚未进入训练集。
+    </p>
+
+    <div class="color-grid reveal">
+      <article class="color-card">
+        <div class="color-card__media"><img data-media="towel_blue" src="../assets/images/towel_blue.jpg" alt="蓝毛巾——预训练用的颜色" /></div>
+        <div class="color-card__title">蓝色</div>
+        <div class="color-card__meta">预训练基线 · 100 episodes</div>
+        <p>单一子技能（定位角 → 闭合 → 抬升）。产出 C1 先验的那批数据。</p>
+      </article>
+
+      <article class="color-card">
+        <div class="color-card__media"><img data-media="towel_red" src="../assets/images/towel_red.jpg" alt="红毛巾——HIL 微调用色" /></div>
+        <div class="color-card__title">红色</div>
+        <div class="color-card__meta">HIL 微调 · 101 episodes</div>
+        <p>困难状态人工接管采集；和绿色一起组成 C3 训练集。</p>
+      </article>
+
+      <article class="color-card">
+        <div class="color-card__media"><img data-media="towel_green" src="../assets/images/towel_green.jpg" alt="绿毛巾——HIL 微调用色" /></div>
+        <div class="color-card__title">绿色</div>
+        <div class="color-card__meta">HIL 微调 · 101 episodes</div>
+        <p>和红色承担同样的角色。两种颜色上均观察到定性整任务通过。</p>
+      </article>
+
+      <article class="color-card color-card--lab">
+        <div class="color-card__media"><img data-media="towel_yellow" src="../assets/images/towel_yellow.jpg" alt="黄毛巾——工位色卡一部分" /></div>
+        <div class="color-card__title">黄色</div>
+        <div class="color-card__meta">工位色卡 · 尚未入训练集</div>
+        <p>四色毛巾之一，目前在工位的色卡里，不在 C1 或 C3 数据集里。</p>
+      </article>
+    </div>
+
+    <!-- 真视频区 -->
+    <div class="result-videos reveal">
+      <div class="result-video">
+        <video data-media="grasp_video" autoplay muted loop playsinline poster="../assets/images/towel_blue.jpg" aria-label="蓝毛巾抓角与折叠">
+          <source src="../assets/videos/hero_demo.mp4" type="video/mp4" />
+        </video>
+        <div class="result-video__body">
+          <span class="status-pill status-pill--done">C1 / C3</span>
+          <h4>抓角与抬升 · 蓝毛巾</h4>
+          <p>ACT 在蓝毛巾上自主定位并抓取角。我们掌握得最早的一项子技能，也是后面一切的种子。</p>
+        </div>
+      </div>
+      <div class="result-video">
+        <video data-media="hil_video" autoplay muted loop playsinline poster="../assets/images/towel_red.jpg" aria-label="推理时人在回路：主臂跟随从臂，随时准备接管">
+          <source src="../assets/videos/hil.mp4" type="video/mp4" />
+        </video>
+        <div class="result-video__body">
+          <span class="status-pill status-pill--doing">HIL</span>
+          <h4>人在回路接管</h4>
+          <p>推理时主臂跟随从臂运动，策略一旦开始偏离，操作员可以立刻接管。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 05 状态 ============= -->
+<section class="section section--status" id="status">
+  <div class="container">
+    <p class="kicker reveal">05 — 状态</p>
+    <h2 class="section__title reveal">已完成 · 进行中 · 还差什么——清楚分开。</h2>
+
+    <div class="status-cols reveal">
+      <article class="status-col status-col--done">
+        <header><span class="status-pill status-pill--done">已完成</span><h3>系统已经做到的事</h3></header>
+        <ul>
+          <li>四 Piper 的双臂遥操作平台（ROS 2 Control）</li>
+          <li>两 Master + 两 Slave，细长夹爪装在两台 Slave 上</li>
+          <li>三相机时间同步录制（左腕 / 右腕 / 顶部 Orbbec）</li>
+          <li>C1 蓝毛巾直接抓角预训练（100 episodes，ACT，chunk_size = 150）</li>
+          <li>C2 红 + 绿困难状态 HIL 采集（101 episodes）</li>
+          <li>C3 从 C1 继承的微调（10k HIL steps）</li>
+          <li>C4 红、绿毛巾上定性整任务通过</li>
+        </ul>
+      </article>
+
+      <article class="status-col status-col--doing">
+        <header><span class="status-pill status-pill--doing">进行中</span><h3>正在跑的事</h3></header>
+        <ul>
+          <li>微调模型上 action-horizon / executed-step 调优</li>
+          <li>红、绿定性通过的逐 trial 台账设计</li>
+          <li>课程阶段数据冻结清单</li>
+        </ul>
+      </article>
+
+      <article class="status-col status-col--todo">
+        <header><span class="status-pill status-pill--todo">未来评估</span><h3>刻意排在后面的事</h3></header>
+        <ul>
+          <li>把黄色毛巾加入后续某一轮数据采集</li>
+          <li>按阶段拆分的失败模式（接近 · 抓角 · 抬升 · 折叠 · 释放）</li>
+          <li>用第二个训练 seed 做可复现性验证</li>
+        </ul>
+      </article>
+    </div>
+
+    <!-- 工程笔记：放在 §5 末尾，不进顶级 nav -->
+    <div class="notes-wrap reveal">
+      <p class="kicker kicker--inline">工程笔记</p>
+      <h3 class="notes-wrap__title">搭建过程中真正注意到的几件事。</h3>
+      <p class="notes-wrap__desc">短、诚实、不堆术语。它们在 §5 末尾，是上面每一栏的背景。</p>
+
+      <div class="notes-grid">
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 01</span>
+          <h4>接近 ≠ 抓住</h4>
+          <p>最早的单顶视策略能到达正确的邻域然后就差了——训练集内部动作 MAE 已经到厘米级，而毛巾角在接触瞬间是个毫米级问题。</p>
+        </article>
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 02</span>
+          <h4>同步比帧率更重要</h4>
+          <p>同步 GPU 推理是吞吐量的隐形杀手。一旦把推理挪到后台进程，控制循环停止重发过期的 hold 指令，action-chunk 调参才真正变成可用的旋钮。</p>
+        </article>
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 03</span>
+          <h4>五相机是走过的弯路</h4>
+          <p>更早的时候我们试过五路同步外部视角（D435i1 / D435i2 / Orbbec + 两个补充机位）。多出来的像素并没有解决接触阶段的精度问题，单相机迁移还直接失败。我们又退回到三路。</p>
+        </article>
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 04</span>
+          <h4>去采策略失败的样本</h4>
+          <p>C2 的人工接管预算里，绝大多数被刻意分配到了<em>难</em>的初始布局和差一点点就要抓空的回合上。再补一百条轻松示教，C3 的提升会比现在小得多。</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 页脚 ============= -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <span class="footer__brand">Piper · 双臂毛巾</span>
+      <span class="footer__sep">·</span>
+      <span class="footer__note">四台 Piper 机械臂 · ROS 2 Control · ACT · 课程式 HIL。</span>
+    </div>
+    <div class="footer__meta">
+      <a href="#top">回到顶部 ↑</a>
+      <a href="https://github.com/dream25851/physical_ai_runtime" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/media.js"></script>
+<script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Learning Fine-Grained Bimanual Towel Manipulation · Piper × ACT</title>
+<meta name="description" content="A four-Piper bimanual robot learning system for fine-grained towel manipulation. ROS 2 Control, three-camera ACT, curriculum HIL fine-tuning. Real progress, real data, real robot." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ============= SCROLL PROGRESS ============= -->
+<div class="scroll-progress" aria-hidden="true"><div class="bar" id="scrollBar"></div></div>
+
+<!-- ============= NAV (5 items) ============= -->
+<header class="nav" id="nav">
+  <div class="container nav__inner">
+    <a href="#top" class="nav__brand">
+      <span class="nav__brand-mark"></span>
+      <span class="nav__brand-text">Piper · Bimanual Towel</span>
+    </a>
+    <nav class="nav__menu" aria-label="Primary">
+      <a href="#overview">Overview</a>
+      <a href="#system">System</a>
+      <a href="#learning">Learning</a>
+      <a href="#results">Results</a>
+      <a href="#status">Status</a>
+    </nav>
+
+    <div class="nav__actions">
+      <a class="nav__lang" href="./zh-cn/" lang="zh-CN" title="切换到中文版">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+          <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.93 6h-2.95a15.7 15.7 0 00-1.4-3.6A8.03 8.03 0 0118.93 8zM12 4.05c.86 1.21 1.55 2.55 2 3.95h-4c.45-1.4 1.14-2.74 2-3.95zM4.26 14a8 8 0 01-.27-2 8 8 0 01.27-2h3.38c-.06.66-.13 1.32-.13 2 0 .68.07 1.34.13 2H4.26zm.81 2h2.95c.32 1.27.78 2.45 1.4 3.6A8.03 8.03 0 015.07 16zm2.95-8H5.07a8.03 8.03 0 014.35-3.6A15.7 15.7 0 008.02 8zM12 19.95c-.86-1.21-1.55-2.54-2-3.95h4c-.45 1.41-1.14 2.74-2 3.95zm2.34-5.95h-4.68c-.09-.66-.16-1.32-.16-2 0-.68.07-1.34.16-2h4.68c.09.66.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.27 2.6a15.7 15.7 0 001.4-3.6h2.95a8.03 8.03 0 01-4.35 3.6zM16.36 14c.06-.66.13-1.32.13-2 0-.68-.07-1.34-.13-2h3.38a8 8 0 01.27 2 8 8 0 01-.27 2h-3.38z" fill="currentColor"/>
+        </svg>
+        <span>中文</span>
+      </a>
+      <a class="nav__github" href="https://github.com/dream25851/physical_ai_runtime" target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub" title="View source on GitHub">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="currentColor" d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1-.02-1.96-3.2.69-3.87-1.54-3.87-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.16 1.18a10.95 10.95 0 0 1 5.74 0c2.2-1.49 3.16-1.18 3.16-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.07.78 2.16 0 1.56-.01 2.81-.01 3.2 0 .31.21.68.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
+        </svg>
+      </a>
+    </div>
+
+    <button class="nav__toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ============= HERO (with real video) ============= -->
+<section class="hero" id="top">
+  <div class="hero__bg" aria-hidden="true">
+    <div class="hero__gradient"></div>
+    <div class="hero__grid"></div>
+  </div>
+
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <div class="hero__eyebrow hero-fade" style="--delay:.05s">
+        <span class="dot"></span> Robotics · Embodied AI · Curriculum Imitation Learning
+      </div>
+
+      <h1 class="hero__title">
+        <span class="hero-mask">Learning</span>
+        <span class="hero-mask">fine-grained bimanual</span>
+        <span class="hero-mask hero-mask--accent">towel manipulation.</span>
+      </h1>
+
+      <p class="hero__sub hero-fade" style="--delay:.7s">
+        A ROS 2 Control-based dual-arm system that turns human bimanual demonstrations into an
+        ACT policy — first learning to grasp a towel corner on the blue towel, then absorbing
+        hard-state corrections from the operator, then folding the whole thing.
+      </p>
+
+      <div class="hero__badges hero-fade" style="--delay:1.0s">
+        <span class="status-pill status-pill--done" data-note="Real hardware, qualitative full-task success on red and green towels.">Qualitative Full-Task · Pass</span>
+        <span class="status-pill status-pill--doing" data-note="Inherited fine-tune operating on real robot; lab notes &amp; failures preserved.">HIL Fine-Tune · Done</span>
+        <span class="status-pill status-pill--todo" data-note="Four towel colors collected, full benchmark not yet frozen.">4-Color Lab · Available</span>
+      </div>
+
+      <div class="hero__cta hero-fade" style="--delay:1.1s">
+        <a href="#learning" class="btn btn--primary">
+          <span>Read the Curriculum</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 4v14m0 0l-5-5m5 5l5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#results" class="btn btn--ghost">See Real Footage</a>
+      </div>
+    </div>
+
+    <div class="hero__visual hero-fade" style="--delay:.3s">
+      <div class="hero__media">
+        <video class="hero__video" data-media="hero_video" autoplay muted loop playsinline poster="assets/images/towel_blue.jpg" aria-label="Real footage: corner grasp and fold on a towel">
+          <source src="assets/videos/hero_demo.mp4" type="video/mp4" />
+        </video>
+        <div class="hero__media-tape" aria-hidden="true">
+          <span>4 × PIPER · 2 MASTER · 2 SLAVE</span>
+          <span>·</span>
+          <span>3 CAMERAS · 14-D STATE</span>
+          <span>·</span>
+          <span>ACT · chunk_size = 150</span>
+          <span>·</span>
+          <span>100 → 101 EPISODES</span>
+          <span>·</span>
+        </div>
+      </div>
+
+      <div class="hero__chips">
+        <span class="chip">Bimanual Teleop</span>
+        <span class="chip">3 RGB Views</span>
+        <span class="chip">Curriculum HIL</span>
+        <span class="chip">Custom Slim Gripper</span>
+        <span class="chip">Four Towel Colors</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 01 OVERVIEW ============= -->
+<section class="section section--overview" id="overview">
+  <div class="container narrow reveal">
+    <p class="kicker">01 — Overview</p>
+    <h2 class="section__title">Two arms. One towel. The smallest sub-skill that had to work first.</h2>
+
+    <p class="section__lead">
+      This project builds a four-arm Piper robot learning system around a single running example — folding a towel. Two <em>master</em> arms are driven by a human operator in gravity-compensation mode; two <em>slave</em> arms mirror the motion on a real workcell and are recorded together with three synchronized RGB cameras (left wrist, right wrist, fixed top Orbbec) and a 14-D robot state. Those recordings train an ACT policy, but not in one shot: a curriculum first learns a reusable sub-skill on the blue towel, then absorbs hard-state corrections from the operator on the red and green towels, then performs the full task.
+    </p>
+
+    <p class="section__lead">
+      As of today, the inherited fine-tune qualitatively finishes the full task (grasp → lift → fold) on red and green towels. Quantitative results are not claimed here — this page is for the engineering story, the data, and the real assets.
+    </p>
+  </div>
+</section>
+
+<!-- ============= 02 SYSTEM ============= -->
+<section class="section section--system" id="system">
+  <div class="container">
+    <p class="kicker reveal">02 — System</p>
+    <h2 class="section__title reveal">Four arms. Two machines. One mirror.</h2>
+    <p class="section__lead reveal narrow">
+      Real-time guarantees live on the robot-side NUC; learning lives on the RTX 4090 workstation. They talk over ROS 2 — that's the whole architecture.
+    </p>
+
+    <div class="arch reveal" id="arch">
+      <div class="arch__row arch__row--top" aria-label="Operator tier">
+        <div class="node node--human">
+          <div class="node__icon"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 21c0-4 3.5-6.5 7-6.5s7 2.5 7 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div class="node__label">Human Operator</div>
+          <div class="node__hint">Drives both masters by hand</div>
+        </div>
+      </div>
+
+      <div class="arch__connector arch__connector--live"><span></span></div>
+
+      <div class="arch__row arch__row--mid">
+        <div class="node"><div class="node__tag">MASTER L</div><div class="node__label">Master Piper · Left</div><div class="node__hint">Gravity-comp / teach mode</div></div>
+        <div class="node node--center"><div class="node__tag">TELEOP</div><div class="node__label">Bimanual Mirror</div><div class="node__hint">Real-time · ROS 2 · 30 Hz</div></div>
+        <div class="node"><div class="node__tag">MASTER R</div><div class="node__label">Master Piper · Right</div><div class="node__hint">Gravity-comp / teach mode</div></div>
+      </div>
+
+      <div class="arch__connector arch__connector--live"><span></span></div>
+
+      <div class="arch__row arch__row--mid">
+        <div class="node"><div class="node__tag">SLAVE</div><div class="node__label">2 × Slave Piper</div><div class="node__hint">Slim gripper · runs the task</div></div>
+        <div class="node"><div class="node__tag">EDGE</div><div class="node__label">Intel NUC · ROS 2 Control</div><div class="node__hint">Robot-side real-time loop</div></div>
+        <div class="node"><div class="node__tag">VISION</div><div class="node__label">2 × Wrist + 1 × Top Orbbec</div><div class="node__hint">3 RGB views · 480 × 640</div></div>
+      </div>
+
+      <div class="arch__connector arch__connector--async"><span></span></div>
+
+      <div class="arch__row arch__row--mid">
+        <div class="node"><div class="node__tag">RECORD</div><div class="node__label">Episode Recorder</div><div class="node__hint">3-cam video · state · action</div></div>
+        <div class="node node--center"><div class="node__tag">LEARN</div><div class="node__label">RTX 4090 · ACT · Curriculum</div><div class="node__hint">LeRobot env · Pixi</div></div>
+        <div class="node"><div class="node__tag">DEPLOY</div><div class="node__label">Back to NUC</div><div class="node__hint">Same runtime, real robot</div></div>
+      </div>
+    </div>
+
+    <!-- Bimanual teleoperation with real video -->
+    <div class="row-video reveal">
+      <div class="row-video__text">
+        <p class="kicker kicker--inline">Bimanual Teleoperation</p>
+        <h3 class="row-video__title">Hands teach. Slaves record.</h3>
+        <p class="row-video__desc">
+          No wand, no keyboard, no scripting. The operator grabs both masters and does the task at human speed; the slaves reproduce the same joint trajectories in real time, while three cameras and the 14-D robot state are timestamped and saved by the Episode Recorder.
+        </p>
+      </div>
+      <div class="row-video__media">
+        <video class="row-video__video" data-media="teleop_video" autoplay muted loop playsinline aria-label="Bimanual teleoperation in progress">
+          <source src="assets/videos/teleoperation.mp4" type="video/mp4" />
+        </video>
+        <div class="row-video__caption">FIG · Real teleoperation on the four-Piper workcell.</div>
+      </div>
+    </div>
+
+    <!-- Custom slim gripper -->
+    <div class="row-split reveal">
+      <div class="row-split__text">
+        <p class="kicker kicker--inline">Custom End-Effector</p>
+        <h3 class="row-split__title">A slimmer finger for corner work.</h3>
+        <p class="row-split__desc">
+          The stock Piper gripper is a generalist. Towel corners are not. A custom slim, elongated gripper is mounted on <strong>both slave arms</strong>: the narrower finger reaches between the corner and the table without colliding with adjacent cloth, and the longer stroke gives a more controlled close on a deformable edge.
+        </p>
+        <div class="status status--done">
+          <span class="status__dot"></span>
+          <span><strong>Status:</strong> slim gripper designed, fabricated, and mounted on both slaves · qualitative grasp improvement observed.</span>
+        </div>
+      </div>
+      <div class="row-split__media">
+        <div class="media-placeholder media-placeholder--gripper" data-media="gripper_photo">
+          <img data-media-img alt="" hidden>
+          <div class="media-placeholder__inner" data-media-fallback>
+            <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><path d="M22 46V18a5 5 0 0110 0v28M32 46V18a5 5 0 0110 0v28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <p class="t-mono">TODO · grasp.jpg</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multiview: 3 cameras, mention 5-cam dead end -->
+    <div class="multiview reveal">
+      <p class="kicker kicker--inline">What the policy sees</p>
+      <h3 class="multiview__title">Three RGB views + joint state. <span class="t-faint">(Five views was a dead end — see Engineering Notes.)</span></h3>
+      <div class="vision-flow">
+        <div class="vision-flow__cam">
+          <div class="media-placeholder media-placeholder--cam" data-media="cam_left_wrist">
+            <img data-media-img alt="" hidden>
+            <div class="media-placeholder__inner" data-media-fallback>
+              <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><rect x="10" y="14" width="44" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><circle cx="32" cy="32" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              <p class="t-mono">TODO · left_wrist.jpg</p>
+            </div>
+          </div>
+          <div class="vision-flow__cap"><b>Left Wrist</b><span>Close-up on left corner</span></div>
+        </div>
+        <div class="vision-flow__plus" aria-hidden="true">+</div>
+        <div class="vision-flow__cam">
+          <div class="media-placeholder media-placeholder--cam" data-media="cam_right_wrist">
+            <img data-media-img alt="" hidden>
+            <div class="media-placeholder__inner" data-media-fallback>
+              <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><rect x="10" y="14" width="44" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><circle cx="32" cy="32" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              <p class="t-mono">TODO · right_wrist.jpg</p>
+            </div>
+          </div>
+          <div class="vision-flow__cap"><b>Right Wrist</b><span>Close-up on right corner</span></div>
+        </div>
+        <div class="vision-flow__plus" aria-hidden="true">+</div>
+        <div class="vision-flow__cam">
+          <div class="media-placeholder media-placeholder--cam" data-media="cam_orbbec_top">
+            <img data-media-img alt="" hidden>
+            <div class="media-placeholder__inner" data-media-fallback>
+              <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><rect x="10" y="14" width="44" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><circle cx="32" cy="32" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              <p class="t-mono">TODO · orbbec_top.jpg</p>
+            </div>
+          </div>
+          <div class="vision-flow__cap"><b>Top Orbbec</b><span>Workspace overview</span></div>
+        </div>
+        <div class="vision-flow__plus" aria-hidden="true">+</div>
+        <div class="vision-flow__cam vision-flow__cam--state">
+          <div class="state-card">
+            <div class="state-card__row"><span>Joint positions</span><b>7 × 2</b></div>
+            <div class="state-card__row"><span>Gripper opening</span><b>2</b></div>
+            <div class="state-card__row"><span>Total</span><b>14-D state</b></div>
+          </div>
+          <div class="vision-flow__cap"><b>Robot State</b><span>14-D · per-timestep</span></div>
+        </div>
+        <div class="vision-flow__arr" aria-hidden="true">→</div>
+        <div class="vision-flow__out">
+          <div class="policy-box">
+            <div class="policy-box__tag">POLICY</div>
+            <div class="policy-box__name">ACT</div>
+            <div class="policy-box__hint">Action Chunking with Transformers</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 03 LEARNING ============= -->
+<section class="section section--learning" id="learning">
+  <div class="container">
+    <p class="kicker reveal">03 — Learning</p>
+    <h2 class="section__title reveal">Pretrain a sub-skill. Intervene on hard states. Inherit-fine-tune.</h2>
+    <p class="section__lead reveal narrow">
+      Five curriculum stages, each solving a specific gap left by the previous one. Pretraining only learns to grasp a corner on the blue towel. Fine-tuning absorbs the operator's corrections on red and green. The full task follows.
+    </p>
+
+    <div class="timeline reveal" id="timeline">
+      <div class="timeline__track" aria-hidden="true"></div>
+
+      <article class="tnode tnode--done" data-note="Bimanual pipeline acceptance, three-camera sync, failure taxonomy, executed-step sweep on the single-top-view ACT baselines.">
+        <div class="tnode__head"><span class="tnode__id">C0</span><span class="tnode__date">08-26 ~ 08-29</span></div>
+        <div class="tnode__title">Pipeline &amp; Failure Diagnosis</div>
+        <div class="tnode__body">Three-camera sync, ACT inference, gripper close, action execution, failure taxonomy, and a first executed-step sweep across single-top-view ACT baselines.</div>
+        <span class="status-pill status-pill--done">Done</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="Trained on pick_corner_orbbec: 100 episodes, all on the blue towel, just corner grasp + lift.">
+        <div class="tnode__head"><span class="tnode__id">C1</span><span class="tnode__date">09-01</span></div>
+        <div class="tnode__title">Direct Corner Grasp · Blue Towel</div>
+        <div class="tnode__body">100 teleop episodes on the <em>blue</em> towel, single sub-skill: locate a corner, close, lift. ACT with <code>chunk_size=150</code> (best of the executed-step sweep), 20k steps, ResNet-18 vision tower. This is the pretrained prior that everything else inherits from.</div>
+        <span class="status-pill status-pill--done">Done</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="pick_corner_hil: 101 episodes on red + green towels, exactly one teleop interval per episode.">
+        <div class="tnode__head"><span class="tnode__id">C2</span><span class="tnode__date">09-02</span></div>
+        <div class="tnode__title">Hard-State HIL Collection · Red &amp; Green</div>
+        <div class="tnode__body">C1 policy runs autonomously on red and green towels; the operator takes over the moment the policy is about to miss the grasp or slip, and finishes the whole task — including the fold. 101 episodes, exactly one teleop interval per episode.</div>
+        <span class="status-pill status-pill--done">Done</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="pick_corner_finetune/checkpoints/010000 — init from C1 020000, 10k HIL steps on red+green data.">
+        <div class="tnode__head"><span class="tnode__id">C3</span><span class="tnode__date">09-02</span></div>
+        <div class="tnode__title">Inherited Fine-Tune</div>
+        <div class="tnode__body">Initialize from C1 (no scratch), train 10k steps on the red+green HIL data. The model keeps what worked (corner approach on the blue towel) and absorbs corrections (misalignment recovery and full-task rollout on red and green).</div>
+        <span class="status-pill status-pill--done">Done</span>
+      </article>
+
+      <article class="tnode tnode--done" data-note="Operator confirmed full task on red and green towels. No per-trial log; this is qualitative, not a number.">
+        <div class="tnode__head"><span class="tnode__id">C4</span><span class="tnode__date">09-02</span></div>
+        <div class="tnode__title">Qualitative Full-Task Test</div>
+        <div class="tnode__body">Without any human help, the fine-tuned model completes <em>grasp → lift → fold</em> on both red and green towels during on-bench evaluation. This is <strong>qualitative</strong> — there is no per-trial log yet.</div>
+        <span class="status-pill status-pill--done">Qualitative Pass</span>
+      </article>
+    </div>
+
+    <!-- Action chunk callout -->
+    <div class="callout callout--accent reveal">
+      <strong>Why chunk_size = 150.</strong>
+      After sweeping executed steps at C0, shorter chunks starved the control loop and longer chunks couldn't react to a slipping corner. 150 was the configuration that empirically kept real grasps holding — it's the one we shipped into the inherited fine-tune.
+    </div>
+
+    <!-- HIL flow -->
+    <div class="hil-flow reveal">
+      <div class="hil-flow__head">
+        <p class="kicker kicker--inline">From grasping to folding</p>
+        <h3 class="hil-flow__title">ACT grasps. Human finishes the fold. Robot records.</h3>
+        <p class="hil-flow__desc">The full task is too long for a single end-to-end demo budget. We split it: let the policy do what it already does well (the grasp), and have a human pick up exactly where the policy gets nervous (the fold). The resulting episode is the training signal for the next round.</p>
+      </div>
+      <div class="hil-flow__steps">
+        <div class="hil-step">
+          <div class="hil-step__num">1</div>
+          <div class="hil-step__title">ACT autonomous grasp</div>
+          <div class="hil-step__desc">Fine-tuned policy approaches the corner and closes.</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step hil-step--human">
+          <div class="hil-step__num">2</div>
+          <div class="hil-step__title">Human takeover</div>
+          <div class="hil-step__desc">Operator grabs masters the moment the policy gets close to a failure.</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step hil-step--human">
+          <div class="hil-step__num">3</div>
+          <div class="hil-step__title">Bimanual fold demo</div>
+          <div class="hil-step__desc">Human completes the lift + forward motion + release with both arms.</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step">
+          <div class="hil-step__num">4</div>
+          <div class="hil-step__title">Episode saved</div>
+          <div class="hil-step__desc">Full trajectory appended to the HIL dataset — one new "correction + completion".</div>
+        </div>
+        <div class="hil-arr" aria-hidden="true">→</div>
+        <div class="hil-step hil-step--loop">
+          <div class="hil-step__num">5</div>
+          <div class="hil-step__title">Inherit-fine-tune</div>
+          <div class="hil-step__desc">C1 init → C3 step → loop until qualitative pass.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 04 RESULTS ============= -->
+<section class="section section--results" id="results">
+  <div class="container">
+    <p class="kicker reveal">04 — Results</p>
+    <h2 class="section__title reveal">Real footage. Real towels. Honest labels.</h2>
+    <p class="section__lead reveal narrow">
+      Every towel you see here is the same physical setup; what differs is the data it was used for. Yellow is part of the lab's color palette but is not yet in the training set.
+    </p>
+
+    <div class="color-grid reveal">
+      <article class="color-card">
+        <div class="color-card__media"><img data-media="towel_blue" src="assets/images/towel_blue.jpg" alt="Blue towel — the pretraining color" /></div>
+        <div class="color-card__title">Blue</div>
+        <div class="color-card__meta">Pretraining base · 100 episodes</div>
+        <p>Single sub-skill (locate corner → close → lift). The dataset that produced the C1 prior.</p>
+      </article>
+
+      <article class="color-card">
+        <div class="color-card__media"><img data-media="towel_red" src="assets/images/towel_red.jpg" alt="Red towel — HIL fine-tuning color" /></div>
+        <div class="color-card__title">Red</div>
+        <div class="color-card__meta">HIL fine-tuning · 101 episodes</div>
+        <p>Hard-state takeover collection; combined with green to form the C3 training set.</p>
+      </article>
+
+      <article class="color-card">
+        <div class="color-card__media"><img data-media="towel_green" src="assets/images/towel_green.jpg" alt="Green towel — HIL fine-tuning color" /></div>
+        <div class="color-card__title">Green</div>
+        <div class="color-card__meta">HIL fine-tuning · 101 episodes</div>
+        <p>Same role as red. Qualitative full-task pass observed on both colors.</p>
+      </article>
+
+      <article class="color-card color-card--lab">
+        <div class="color-card__media"><img data-media="towel_yellow" src="assets/images/towel_yellow.jpg" alt="Yellow towel — part of the lab color palette" /></div>
+        <div class="color-card__title">Yellow</div>
+        <div class="color-card__meta">Lab color · not yet in training</div>
+        <p>Part of the four-color palette we keep on the workcell. Not in the C1 or C3 datasets.</p>
+      </article>
+    </div>
+
+    <!-- Real video strip -->
+    <div class="result-videos reveal">
+      <div class="result-video">
+        <video data-media="grasp_video" autoplay muted loop playsinline poster="assets/images/towel_blue.jpg" aria-label="Corner grasp and fold on the blue towel">
+          <source src="assets/videos/hero_demo.mp4" type="video/mp4" />
+        </video>
+        <div class="result-video__body">
+          <span class="status-pill status-pill--done">C1 / C3</span>
+          <h4>Corner grasp and lift — blue towel</h4>
+          <p>ACT autonomously locates and grasps a corner on the blue towel. The earliest skill we have, and the seed for everything after it.</p>
+        </div>
+      </div>
+      <div class="result-video">
+        <video data-media="hil_video" autoplay muted loop playsinline poster="assets/images/towel_red.jpg" aria-label="Inference with a human in the loop: master arms track the slaves, ready to take over">
+          <source src="assets/videos/hil.mp4" type="video/mp4" />
+        </video>
+        <div class="result-video__body">
+          <span class="status-pill status-pill--doing">HIL</span>
+          <h4>Human-in-the-loop takeover</h4>
+          <p>During inference the master arms track the slaves, so the operator can take over the instant the policy starts to drift.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= 05 STATUS (with engineering notes) ============= -->
+<section class="section section--status" id="status">
+  <div class="container">
+    <p class="kicker reveal">05 — Status</p>
+    <h2 class="section__title reveal">Done, in progress, and not yet — clearly separated.</h2>
+
+    <div class="status-cols reveal">
+      <article class="status-col status-col--done">
+        <header><span class="status-pill status-pill--done">Completed</span><h3>What the system already does</h3></header>
+        <ul>
+          <li>Four-Piper bimanual teleoperation system on ROS 2 Control</li>
+          <li>Two master + two slave architecture, with the slim gripper on both slaves</li>
+          <li>Three-camera synchronized recording (left wrist, right wrist, top Orbbec)</li>
+          <li>C1 direct corner-grasp pretraining on the blue towel (100 episodes, ACT, chunk_size = 150)</li>
+          <li>C2 hard-state HIL collection on red and green towels (101 episodes)</li>
+          <li>C3 inherited fine-tune from C1 (10k HIL steps)</li>
+          <li>C4 qualitative full-task pass on red and green towels</li>
+        </ul>
+      </article>
+
+      <article class="status-col status-col--doing">
+        <header><span class="status-pill status-pill--doing">In Progress</span><h3>What we are running right now</h3></header>
+        <ul>
+          <li>Action-horizon / executed-step tuning on the inherited model</li>
+          <li>Per-trial log design for the qualitative pass on red and green</li>
+          <li>Curriculum-stage freezing checklist for the data archive</li>
+        </ul>
+      </article>
+
+      <article class="status-col status-col--todo">
+        <header><span class="status-pill status-pill--todo">Future Evaluation</span><h3>What is intentionally next</h3></header>
+        <ul>
+          <li>Bring the yellow towel into a future data round</li>
+          <li>Failure-mode breakdown by stage (approach · grasp · lift · fold · release)</li>
+          <li>Reproducibility pass with a second training seed</li>
+        </ul>
+      </article>
+    </div>
+
+    <!-- Engineering Notes (lives inside §5, not in nav) -->
+    <div class="notes-wrap reveal">
+      <p class="kicker kicker--inline">Engineering Notes</p>
+      <h3 class="notes-wrap__title">Things we noticed while building it.</h3>
+      <p class="notes-wrap__desc">Short, honest, free of jargon. They sit inside Status because they're the context for every bullet above.</p>
+
+      <div class="notes-grid">
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 01</span>
+          <h4>Reach ≠ grasp</h4>
+          <p>The earliest single-top-view policies reached the right neighborhood and then missed — the action MAE inside the training set was already in the centimeter range, and towel capture is a millimeter problem at contact.</p>
+        </article>
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 02</span>
+          <h4>Sync &gt; framerate</h4>
+          <p>Synchronous GPU inference starved the control loop. Once inference moved to a background process and the loop stopped re-issuing stale hold commands, action-chunk tuning became a real lever instead of a noise variable.</p>
+        </article>
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 03</span>
+          <h4>Five cameras was a dead end</h4>
+          <p>Earlier we tried five synchronized external views (D435i1, D435i2, Orbbec + two more). The added pixels didn't fix the contact-stage precision problem, and single-camera transfer failed outright. We went back to three.</p>
+        </article>
+        <article class="note-card">
+          <span class="note-card__kicker">LAB · 04</span>
+          <h4>Collect what the policy fails at</h4>
+          <p>Most of the C2 HIL budget went to <em>deliberately</em> hard initial layouts and near-miss grasps. Adding another hundred easy demos would not have moved C3 by anywhere near the same amount.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= FOOTER ============= -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <span class="footer__brand">Piper · Bimanual Towel</span>
+      <span class="footer__sep">·</span>
+      <span class="footer__note">A four-arm Piper learning system · ROS 2 Control · ACT · Curriculum HIL.</span>
+    </div>
+    <div class="footer__meta">
+      <a href="#top">Back to top ↑</a>
+      <a href="https://github.com/dream25851/physical_ai_runtime" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/media.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
